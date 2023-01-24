@@ -6,7 +6,7 @@ interface AppContextData {
 
 const AppContext = createContext({} as AppContextData )
 
-export function AppProvider({children}: {children:React.ReactNode} ) { //component
+export function AppProvider({children}: {children:React.ReactNode}) : JSX.Element { //component
 
     return (
         <AppContext.Provider value={{
