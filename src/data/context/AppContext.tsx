@@ -1,4 +1,4 @@
-import { createContext } from "react";
+import React, { createContext } from "react";
 
 interface AppContextData {
     nome: string
@@ -6,13 +6,13 @@ interface AppContextData {
 
 const AppContext = createContext({} as AppContextData )
 
-export function AppProvider(props: any) { //component
+export function AppProvider({children}: {children:React.ReactNode} ) { //component
 
     return (
         <AppContext.Provider value={{
             nome: 'Teste Context API'
         }}>
-            {props.children}
+            {children}
         </AppContext.Provider>
     )
 }
