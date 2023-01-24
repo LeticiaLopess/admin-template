@@ -1,8 +1,10 @@
 import { createContext } from "react";
 
-const AppContext = createContext({
-    nome: null
-})
+interface AppContextData {
+    nome: string
+}
+
+const AppContext = createContext({} as AppContextData )
 
 export function AppProvider(props: any) { //component
 
