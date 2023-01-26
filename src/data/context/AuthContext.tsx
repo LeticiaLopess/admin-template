@@ -1,5 +1,6 @@
 import route from 'next/router'
-import { createContext, useState } from 'react'
+import { createContext, useEffect, useState } from 'react'
+import Cookies from 'js-cookie'
 import firebase from '../../firebase/config'
 import Usuario from '../../model/Usuario'
 
@@ -22,7 +23,7 @@ async function usuarioNormalizado(usuarioFirebase: firebase.User): Promise<Usuar
             provedor: usuarioFirebase.providerData[0].providerId,
             imagemUrl: usuarioFirebase.photoURL || ""
         }
-        
+
         } return {
             uid: usuarioFirebase.uid,
             nome: usuarioFirebase.displayName || "",
@@ -33,20 +34,48 @@ async function usuarioNormalizado(usuarioFirebase: firebase.User): Promise<Usuar
         }
 }
 
+function gerenciarCookie(logado: boolean) {
+    if(logado) {
+        Cookies.set('admin-template-leticia-auth', new Boolean(logado).toString(), {expires: 7
+        })
+    } else {
+        Cookies.remove('admin-template-leticia-auth')
+    }
+}
+
 export function AuthProvider(props: any) {
+    const [carregando, setCarregando] = useState(true)
     const [usuario, setUsuario] = useState<Usuario>()
+
+    async function configurarSessao(usuarioFirebase: any) {
+        if(usuarioFirebase?.email) {
+            const usuario = await usuarioNormalizado(usuarioFirebase)
+            setUsuario(usuario)
+            gerenciarCookie(true)
+            setCarregando(false)
+            return usuario.email
+
+        } else {
+            setUsuario(null)
+            gerenciarCookie(false)
+            setCarregando(false)
+            return false
+        }
+    }
 
     async function loginGoogle() {
         const resp = await firebase.auth().signInWithPopup(
             new firebase.auth.GoogleAuthProvider()
         )
 
-        if(resp.user?.email) {
-            const usuario = await usuarioNormalizado(resp.user)
-            setUsuario(usuario)
+        configurarSessao(resp.user)
             route.push('/') 
-        }
     }
+
+    useEffect(() => {
+        const cancelar = firebase.auth().onIdTokenChanged(configurarSessao)
+        return() => cancelar()
+    }, [])
 
     return (
         <AuthContext.Provider value={{
