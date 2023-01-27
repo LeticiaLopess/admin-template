@@ -7,6 +7,7 @@ import Usuario from '../../model/Usuario'
 interface AuthContextProps {
     usuario?: Usuario 
     loginGoogle?: () => Promise<void>
+    logout?: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextProps>({}) 
@@ -45,7 +46,7 @@ function gerenciarCookie(logado: boolean) {
 
 export function AuthProvider(props: any) {
     const [carregando, setCarregando] = useState(true)
-    const [usuario, setUsuario] = useState<Usuario>()
+    const [usuario, setUsuario]= useState<Usuario | any>()
 
     async function configurarSessao(usuarioFirebase: any) {
         if(usuarioFirebase?.email) {
@@ -64,23 +65,40 @@ export function AuthProvider(props: any) {
     }
 
     async function loginGoogle() {
-        const resp = await firebase.auth().signInWithPopup(
-            new firebase.auth.GoogleAuthProvider()
-        )
+        try {
+            const resp = await firebase.auth().signInWithPopup(
+                new firebase.auth.GoogleAuthProvider()
+            )
+    
+            configurarSessao(resp.user)
+            route.push('/')
+        } finally {
+            setCarregando(false)
+        }
+    }
 
-        configurarSessao(resp.user)
-            route.push('/') 
+    async function logout() {
+        try {
+            setCarregando(true)
+            await firebase.auth().signOut()
+            await configurarSessao(null)
+        } finally {
+            setCarregando(false)
+        }
     }
 
     useEffect(() => {
-        const cancelar = firebase.auth().onIdTokenChanged(configurarSessao)
+        if (Cookies.get('admin-template-leticia-auth')) {
+            const cancelar = firebase.auth().onIdTokenChanged(configurarSessao)
         return() => cancelar()
+        }
     }, [])
 
     return (
         <AuthContext.Provider value={{
             usuario,
-            loginGoogle
+            loginGoogle,
+            logout
         }}>
             {props.children}
         </AuthContext.Provider>
