@@ -5,13 +5,15 @@ import firebase from '../../firebase/config'
 import Usuario from '../../model/Usuario'
 
 interface AuthContextProps {
-    usuario?: Usuario 
-    carregando?: boolean
-    loginGoogle?: () => Promise<void>
-    logout?: () => Promise<void>
+    usuario: Usuario 
+    carregando: boolean
+    login: (email: string, senha: string) => Promise<void>
+    cadastrar: (email: string, senha: string) => Promise<void>
+    loginGoogle: () => Promise<void>
+    logout: () => Promise<void>
 }
 
-const AuthContext = createContext<AuthContextProps>({}) 
+const AuthContext = createContext({} as AuthContextProps) 
 
 async function usuarioNormalizado(usuarioFirebase: firebase.User): Promise<Usuario> {
     const token = await usuarioFirebase.getIdToken()
@@ -65,13 +67,40 @@ export function AuthProvider(props: any) {
         }
     }
 
+    async function login(email: string, senha: string) {
+        try {
+            setCarregando(true)
+            const resp = await firebase.auth().signInWithEmailAndPassword
+            (email, senha)
+    
+            await configurarSessao(resp.user)
+            route.push('/')
+        } finally {
+            setCarregando(false)
+        }
+    }
+
+    async function cadastrar(email: string, senha: string) {
+        try {
+            setCarregando(true)
+            const resp = await firebase.auth().createUserWithEmailAndPassword
+            (email, senha)
+    
+            await configurarSessao(resp.user)
+            route.push('/')
+        } finally {
+            setCarregando(false)
+        }
+    }
+
     async function loginGoogle() {
         try {
+            setCarregando(true)
             const resp = await firebase.auth().signInWithPopup(
                 new firebase.auth.GoogleAuthProvider()
             )
     
-            configurarSessao(resp.user)
+            await configurarSessao(resp.user)
             route.push('/')
         } finally {
             setCarregando(false)
@@ -101,6 +130,8 @@ export function AuthProvider(props: any) {
         <AuthContext.Provider value={{
             usuario,
             carregando,
+            login,
+            cadastrar,
             loginGoogle,
             logout
         }}>

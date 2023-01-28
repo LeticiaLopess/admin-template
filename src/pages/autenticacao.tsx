@@ -3,28 +3,32 @@ import AuthInput from "../components/auth/AuthInput";
 import { IconeAtencao } from "../components/icons";
 import useAuth from "../data/hook/useAuth";
 
-export default function Autenticação() {
+export default function Autenticacao() {
 
-    const { usuario, loginGoogle } = useAuth()
+    const { cadastrar, login, loginGoogle } = useAuth() 
 
     const [erro, setErro] = useState(null)
     const [modo, setModo] = useState<'login' | 'cadastro'>('login')
     const [email, setEmail] = useState('')
     const [senha, setSenha] = useState('')
 
-    function exibirErro(msg: any, tempoEmSegundos = 5) {
+    function exibirErro(msg:any, tempoEmSegundos = 5) {
         setErro(msg)
         setTimeout(() => setErro(null), tempoEmSegundos * 1000)
     }
 
-    function submeter() {
-        if (modo === 'login') {
-            console.log('login')
-        } else {
-            console.log('cadastrar')
+    async function submeter() {
+        try {
+            if (modo === 'login') {
+                await login(email, senha)
+            } else {
+                await cadastrar(email, senha)
+            }
+        } catch(e) {
+            exibirErro(e ?? 'Erro desconhecido!')
         }
     }
-
+    
     return (
         <div className="flex h-screen items-center justify-center">
             <div className="hidden md:block md:w-1/2 lg:w-2/3" /* a foto fica escondida em dispositivos móveis e aparece a partir de dispositivos médios */> 
