@@ -1,3 +1,4 @@
+import Head from "next/head"
 import Image from "next/image"
 import Router from "next/router"
 import loading from '../../../public/images/loading.gif'
@@ -10,6 +11,17 @@ export default function ForcarAutenticacao(props: any) {
     function renderizarConteudo() {
         return (
             <>
+                <Head>
+                    <script 
+                        dangerouslySetInnerHTML={{
+                            __html: `
+                            if(!document.cookie?.includes("admin-template-leticia-auth")) {
+                                window.location.href = "/autenticacao"
+                            }
+                        `
+                        }}
+                    /> 
+                </Head>
                 {props.children}
             </>
         )
