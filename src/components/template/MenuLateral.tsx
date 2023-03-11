@@ -1,6 +1,5 @@
 import { IconeCasa, IconeAjustes, IconeSino, IconeSair } from "../icons";
 import MenuItem from "./MenuItem";
-import { isPropertySignature } from "typescript";
 import Logo from "./Logo";
 import useAuth from "../../data/hook/useAuth";
 
